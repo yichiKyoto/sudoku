@@ -1,5 +1,6 @@
 import numpy as np
 
+# Given a puzzle (2D integer array), checks whether it is correctly solved
 def checkSudoku(solvedPuzzle): 
     for x in range(9):
         for y in range(9):
@@ -7,7 +8,11 @@ def checkSudoku(solvedPuzzle):
                 return False
     return True
 
+# Given a puzzle and a coordinate, checks if the value at the cell is valid
 def checkCell(solvedPuzzle, x, y):
+    if (solvedPuzzle[x][y] < 1 or solvedPuzzle[x][y] > 9):
+        return False
+
     return checkRow(x, y) and checkCol(x, y) and checkGrid(x, y)
 
 def checkRow(solvedPuzzle, x, y):
