@@ -7,7 +7,6 @@ def checkSudoku(solvedPuzzle):
                 return False
     return True
 
-
 def checkCell(solvedPuzzle, x, y):
     return checkRow(x, y) and checkCol(x, y) and checkGrid(x, y)
 
@@ -15,19 +14,20 @@ def checkRow(solvedPuzzle, x, y):
     for i in range(9):
         if solvedPuzzle[x][i] == solvedPuzzle[x][y] and i != y:
             return False
-    return True;
+    return True
 
 def checkCol(solvedPuzzle, x, y):
     for i in range(9):
         if solvedPuzzle[i][y] == solvedPuzzle[x][y] and i != x:
             return False
-    return True;
+    return True
 
-# def checkGrid(solvedPuzzle, x, y):
-#     xGrid = x // 3
-#     yGrid = y // 3
+def checkGrid(solvedPuzzle, x, y):
+    xGrid = (x // 3) * 3
+    yGrid = (y // 3) * 3
 
-#     for i in range(3):
-#         if solvedPuzzle[i][y] == solvedPuzzle[x][y]:
-#             return False
-#     return True;
+    for i in range(xGrid, xGrid + 3):
+        for j in range(yGrid, yGrid + 3):
+            if solvedPuzzle[i][j] == solvedPuzzle[x][y] and (i != x or j != y):
+                return False
+    return True
