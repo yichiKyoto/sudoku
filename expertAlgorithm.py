@@ -1,5 +1,6 @@
 import sudokuHelper
 
+# https://www.geeksforgeeks.org/dsa/sudoku-backtracking-7/
 def solve(puzzle, row, col):
     if row == 8 and col == 9:
         return True
@@ -16,7 +17,7 @@ def solve(puzzle, row, col):
         if sudokuHelper.checkCell(puzzle, row, col):
             if solve(puzzle, row, col + 1):
                 return True
-            puzzle[row][col] = 0
+        puzzle[row][col] = 0
 
     return False
 
@@ -39,6 +40,5 @@ def main():
         print(" ".join(map(str, row)))
 
     print(sudokuHelper.checkSudoku(mat))
-
 
 main()
