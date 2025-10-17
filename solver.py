@@ -61,3 +61,42 @@ def hidden_singles(possibles):
                             if x in S:
                                 S[r][c] = {x}
                             break
+
+
+
+def get_row_wing(possibles, wing_col, pivot_col, a_val, c_val):
+  for r in range(9):
+      row_wing = possibles[r][pivot_col]
+      if a_val in row_wing and c_val in row_wing:
+          # remove c from the intersecting place
+          possibles[r][wing_col].discard(c_val)
+
+# Y wing
+def get_col_wing(possibles, pivot_set, pivot_row, pivot_col):
+    for c in range(9):
+      col_wing = possibles[pivot_row][c]
+      col_wing = tuple(col_wing)
+      if len(col_wing) == 2 and col_wing[0] in pivot_set:
+        a_val = None
+        for pivot_val in pivot_set:
+            if pivot_val != col_wing[0]:
+              a_val = pivot_val
+        c_val = col_wing[1]
+        get_row_wing(possibles, c, pivot_col, a_val, c_val)
+      elif len(col_wing) == 2 and col_wing[1] in pivot_set:
+        a_val = None
+        for pivot_val in pivot_set:
+            if pivot_val != col_wing[1]:
+              a_val = pivot_val
+        c_val = col_wing[0]
+        get_row_wing(possibles, c, pivot_col, a_val, c_val)
+
+def y_wing(possibles):
+    for row in range(9):
+        for col in range(9):
+            pivot_set = possibles[row][col]
+            if len(pivot_set) == 2:
+              get_col_wing(possibles, pivot_set, row, col)
+
+
+
