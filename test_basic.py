@@ -20,5 +20,10 @@ def print_possibles(possibles):
 
 
 possibles = solver.det_possibles(puzzle)
+# print_possibles(possibles)
+possibles = solver.obv_pairs(possibles)
 print_possibles(possibles)
-
+possibles = solver.y_wing(possibles)
+print_possibles(possibles)
+possibles = solver.hidden_singles(possibles)
+print_possibles(possibles)

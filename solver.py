@@ -50,6 +50,32 @@ def det_possibles(puzzle):
           rm_from_subgrid(possibles, row, col, number)
   return possibles
 
+def obv_pairs_helper(possibles, box_row, box_col, pivot_set):
+    for r in range(box_row, box_row + 3):
+        for c in range(box_col, box_col + 3):
+            if len(possibles[r][c]) != 1 and possibles[r][c] != pivot_set:
+                possibles[r][c] = possibles[r][c] - pivot_set
+            if len(possibles[r][c]) == 1:
+                next_rm = next(iter(possibles[r][c]))
+                rm_from_subgrid(possibles, r, c, next_rm)
+                rm_from_rows(possibles, r, c, next_rm)
+                rm_from_cols(possibles, r, c, next_rm)
+    return possibles
+
+def obv_pairs(possibles):
+    for box_row in range(0, 9, 3):
+        for box_col in range(0, 9, 3):
+            hash_map = {} # {pair: count}
+            for r in range(box_row, box_row + 3):
+                for c in range(box_col, box_col + 3):
+                    if len(possibles[r][c]) == 2:
+                        pair = tuple(sorted(possibles[r][c]))
+                        hash_map[pair] = hash_map.get(pair, 0) + 1
+            for pivot_tuple in hash_map:
+                if hash_map[pivot_tuple] == 2:
+                    possibles = obv_pairs_helper(possibles, box_row, box_col, set(pivot_tuple))
+    return possibles
+
 
 def hidden_singles(possibles):
     for box_row in range(0, 9, 3):
@@ -62,9 +88,10 @@ def hidden_singles(possibles):
             for r in range(box_row, box_row + 3):
                 for c in range(box_col, box_col + 3):
                     S = possibles[r][c] # for instance S = {1, 3, 4}
+                    print(S)
                     for val in S:
-                      H[val] += H.get(val, 0) + 1
-
+                      H[val] += 1
+            print(H)
 
             # For each number that appears exactly once
             for x, count in H.items():
@@ -73,13 +100,73 @@ def hidden_singles(possibles):
                     for r in range(box_row, box_row + 3):
                         for c in range(box_col, box_col + 3):
                             S = possibles[r][c]
-                            if x in S:
-                                S[r][c] = {x}
+                            if x in S and len(S) != 1:
+                                possibles[r][c] = {x}
                                 rm_from_rows(possibles, r, c, x)
                                 rm_from_cols(possibles, r, c, x)
-                            break
+                                rm_from_subgrid(possibles, r, c, x)
+    return possibles
+def y_wing_search(pr, pc):
+    # row search
+    row_viewers = set()
+    for r in range(9):
+        if r != pr:
+            row_viewers.add((r, pc))
 
+    # column search
+    col_viewers = set()
+    for c in range(9):
+        if c != pc:
+            row_viewers.add((pr, c))
 
+    return row_viewers | col_viewers
+
+def y_wing(possibles):
+    # Iterate over every cell as the pivot (2 candidates)
+    for pr in range(9):
+        for pc in range(9):
+            pivot = possibles[pr][pc]
+            if len(pivot) != 2:
+                continue
+
+            # Find all potential wings that share one candidate with pivot
+            row_wings = []
+            for wr in range(9):
+                row_wing = possibles[wr][pc]
+                if len(row_wing) == 2 and len(row_wing & pivot) == 1:
+                    row_wings.append((wr, pc))
+
+            col_wings = []
+            for wc in range(9):
+                col_wing = possibles[pr][wc]
+                if len(col_wing) == 2 and len(col_wing & pivot) == 1:
+                    col_wings.append((pr, wc))
+            for i in range(len(row_wings)):
+                wing1_row, wing1_col = row_wings[i]
+                wing1 = possibles[wing1_row][wing1_col]
+
+                for j in range(len(col_wings)):
+                    wing2_row, wing2_col = col_wings[j]
+                    wing2 = possibles[wing2_row][wing2_col]
+                    print(str(pivot) + str(wing1) + str(wing2))
+                    # Both wings must share exactly one candidate with the pivot, and different ones
+                    shared = wing1 & wing2
+                    viewers = y_wing_search(wing1_row, wing1_col) & y_wing_search(wing2_row, wing2_col)
+                    print(viewers)
+                    for v_row, v_col in viewers:
+
+                        old_len = len(possibles[v_row][v_col])
+                        if possibles[v_row][v_col] is pivot:
+                            continue
+                        possibles[v_row][v_col] = possibles[v_row][v_col] - shared
+
+                        new_len = len(possibles[v_row][v_col])
+                        if len(possibles[v_row][v_col]) == 1 and old_len != new_len: # might be a problem
+                            next_rm = next(iter(possibles[v_row][v_col]))
+                            rm_from_subgrid(possibles, v_row, v_col, next_rm)
+                            rm_from_rows(possibles, v_row, v_col, next_rm)
+                            rm_from_cols(possibles, v_row, v_col, next_rm)
+    return possibles
 # y wing
 # def get_row_wing(possibles, wing_col, pivot_col, a_val, c_val):
 #   for r in range(9):
@@ -116,71 +203,85 @@ def hidden_singles(possibles):
 
 
 # possibles[r][c] is a set of candidates, e.g. {2, 5}
+# def y_wing_search(pr, pc):
+#     # row search
+#     row_viewers = set()
+#     for r in range(9):
+#         if r != pr:
+#             row_viewers.add((r, pc))
 
-def y_wing(possibles):
-    changed = False
+#     # column search
+#     col_viewers = set()
+#     for c in range(9):
+#         if c != pc:
+#             row_viewers.add((pr, c))
 
-    # Iterate over every cell as the pivot (2 candidates)
-    for pr in range(9):
-        for pc in range(9):
-            pivot = possibles[pr][pc]
-            if len(pivot) != 2:
-                continue
-            a, b = tuple(pivot)
+#     # subgrid search
+#     subgrid_viewers = set()
+#     start_r, start_c = 3 * (pr // 3), 3 * (pc // 3)
+#     for r in range(start_r, start_r + 3):
+#         for c in range(start_c, start_c + 3):
+#             if (r, c) != (pr, pc):
+#                 subgrid_viewers.add((r, c))
 
-            # Find all potential wings that share one candidate with pivot
-            wings = []
-            for wr in range(9):
-                for wc in range(9):
-                    if (wr, wc) == (pr, pc):
-                        continue
-                    cell = possibles[wr][wc]
-                    if len(cell) == 2 and len(cell & pivot) == 1:
-                        wings.append((wr, wc, cell))
+#     return row_viewers | col_viewers | subgrid_viewers
 
-            # Try pairing wings to form a Y-Wing
-            for i in range(len(wings)):
-                wr1, wc1, wing1 = wings[i]
-                for j in range(i + 1, len(wings)):
-                    wr2, wc2, wing2 = wings[j]
+# def y_wing(possibles):
+#     # Iterate over every cell as the pivot (2 candidates)
+#     for pr in range(9):
+#         for pc in range(9):
+#             pivot = possibles[pr][pc]
+#             if len(pivot) != 2:
+#                 continue
 
-                    # Both wings must share exactly one candidate with the pivot, and different ones
-                    shared1 = pivot & wing1
-                    shared2 = pivot & wing2
-                    if shared1 == shared2:
-                        continue  # both share the same one -> not a Y-Wing
+#             # Find all potential wings that share one candidate with pivot
+#             wings = []
+#             for wr in range(9):
+#                 row_wing = possibles[wr][pc]
+#                 if len(row_wing) == 2 and len(row_wing & pivot) == 1:
+#                     wings.append((wr, pc))
 
-                    # The non-shared candidates of wings should be equal
-                    non_shared1 = list(wing1 - pivot)[0]
-                    non_shared2 = list(wing2 - pivot)[0]
-                    if non_shared1 != non_shared2:
-                        continue
+#             for wc in range(9):
+#                 col_wing = possibles[pr][wc]
+#                 if len(col_wing) == 2 and len(col_wing & pivot) == 1:
+#                     wings.append((pr, wc))
 
-                    target_val = non_shared1  # the value to eliminate
+#             start_r, start_c = 3 * (pr // 3), 3 * (pc // 3)
+#             print(pivot)
+#             for r in range(start_r, start_r + 3):
+#                 for c in range(start_c, start_c + 3):
+#                     subgrid_wing = possibles[r][c]
+#                     if len(subgrid_wing) == 2 and len(subgrid_wing & pivot) == 1:
+#                         wings.append((r, c))
 
-                    # Wings must "see" each other — share a row, column, or box
-                    if not sees(wr1, wc1, wr2, wc2):
-                        continue
+#             # Try pairing wings to form a Y-Wing
+#             for i in range(len(wings)):
+#                 wing1_row, wing1_col = wings[i]
+#                 wing1 = possibles[wing1_row][wing1_col]
 
-                    # Eliminate target_val from any cell that sees both wings
-                    for r in range(9):
-                        for c in range(9):
-                            if (r, c) in [(pr, pc), (wr1, wc1), (wr2, wc2)]:
-                                continue
-                            if target_val in possibles[r][c]:
-                                if sees(r, c, wr1, wc1) and sees(r, c, wr2, wc2):
-                                    possibles[r][c].discard(target_val)
-                                    changed = True
-    return changed
+#                 for j in range(i + 1, len(wings)):
+#                     wing2_row, wing2_col = wings[j]
+#                     wing2 = possibles[wing2_row][wing2_col]
+#                     print(wing1)
+#                     print(wing2)
+#                     # Both wings must share exactly one candidate with the pivot, and different ones
+#                     shared = wing1 & wing2
+#                     viewers = y_wing_search(wing1_row, wing1_col) & y_wing_search(wing2_row, wing2_col)
+
+#                     for v_row, v_col in viewers:
+#                         old_len = len(possibles[v_row][v_col])
+#                         possibles[v_row][v_col] = possibles[v_row][v_col] - shared
+#                         print(possibles[v_row][v_col])
+#                         new_len = len(possibles[v_row][v_col])
+#                         if len(possibles[v_row][v_col]) == 1 and old_len != new_len: # might be a problem
+#                             next_rm = next(iter(possibles[v_row][v_col]))
+#                             rm_from_subgrid(possibles, v_row, v_col, next_rm)
+#                             rm_from_rows(possibles, v_row, v_col, next_rm)
+#                             rm_from_cols(possibles, v_row, v_col, next_rm)
+#     return possibles
 
 
-def sees(r1, c1, r2, c2):
-    """Return True if two cells share a row, column, or 3x3 box."""
-    return (
-        r1 == r2
-        or c1 == c2
-        or (r1 // 3 == r2 // 3 and c1 // 3 == c2 // 3)
-    )
+
 
 
 
@@ -198,14 +299,16 @@ def sees(r1, c1, r2, c2):
 
 
 # naked singles
-def singles(possibles):
-    for r in range(9):
-        for c in range(9):
-            if len(possibles[r][c]) == 1:
-                number = None
-                for n in possibles[r][c]:
-                    number = n
-                rm_from_rows(possibles, r, c, number)
-                rm_from_cols(possibles, r, c, number)
-                rm_from_subgrid(possibles, r, c, number)
-    return possibles
+# def singles(possibles):
+#     for r in range(9):
+#         for c in range(9):
+#             if len(possibles[r][c]) == 1:
+#                 number = None
+#                 for n in possibles[r][c]:
+#                     number = n
+#                 rm_from_rows(possibles, r, c, number)
+#                 rm_from_cols(possibles, r, c, number)
+#                 rm_from_subgrid(possibles, r, c, number)
+#     return possibles
+
+
