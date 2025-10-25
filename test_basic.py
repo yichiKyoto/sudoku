@@ -20,10 +20,26 @@ def print_possibles(possibles):
 
 
 possibles = solver.det_possibles(puzzle)
-# print_possibles(possibles)
-possibles = solver.obv_pairs(possibles)
 print_possibles(possibles)
-possibles = solver.y_wing(possibles)
-print_possibles(possibles)
+
 possibles = solver.hidden_singles(possibles)
 print_possibles(possibles)
+
+possibles = solver.y_wing(possibles)
+print_possibles(possibles)
+
+
+
+
+# gset = {(8, 8), (7, 7), (6, 7), (7, 6), (6, 8), (6, 6), (8, 7)}
+# solver.y_wing_rm(possibles, gset, 5, {(5,7)})
+# print_possibles(possibles)
+
+# possibles = solver.pointing(possibles)
+# print_possibles(possibles)
+# possibles = solver.y_wing(possibles)
+# print_possibles(possibles)
+# possibles = solver.hidden_singles(possibles)
+# print_possibles(possibles)
+# possibles = solver.y_wing(possibles)
+# print_possibles(possibles)
