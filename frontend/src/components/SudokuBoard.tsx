@@ -15,6 +15,7 @@ export default function SudokuBoard({
   marks?: (null | 'correct' | 'wrong')[][];
 }) {
   function onInput(r: number, c: number, e: React.ChangeEvent<HTMLInputElement>) {
+    if (givens?.[r]?.[c]) return; // prevent editing initial (given) numbers
     const val = e.target.value.trim();
     const n = Number(val);
     const next = grid.map((row) => row.slice());
@@ -50,7 +51,7 @@ export default function SudokuBoard({
               maxLength={1}
               value={grid[r][c] === 0 ? '' : String(grid[r][c])}
               onChange={(e) => onInput(r, c, e)}
-              disabled={disabled}
+              disabled={disabled || isGiven}
             />
           );
         })
