@@ -13,7 +13,7 @@ The website runs entirely client-side by default using a Web Worker. Python code
 - **Runtime (browser):**
   - Solver: In-browser backtracking solver implemented in TypeScript (`src/lib/utils/sudoku.ts`) and executed in a Web Worker (`src/workers/solverWorker.ts`).
   - Generator: In-browser puzzle generator with uniqueness checks (`generatePuzzle` in `src/lib/utils/sudoku.ts`).
-  - API: The UI talks to an abstract API (`src/lib/api`) which either uses the Web Worker (default) or a mock dataset.
+  - API: The UI talks to a worker-based API (`src/lib/api`).
 
 - **Python programs (offline workflow):**
   - Python modules implement advanced techniques (Hidden Singles, Pointing, X-Wing, Y-Wing, AIC) for analysis and difficulty vetting:
@@ -29,18 +29,15 @@ The website runs entirely client-side by default using a Web Worker. Python code
   - `npm run build` (production build)
   - `npm start` (serve production build)
 
-- Switch API mode:
-  - Default is the worker-backed solver/generator.
-  - Set `NEXT_PUBLIC_API_MODE=mock` to use static test puzzles instead of the worker.
-  - You can also override via query param: `?api=mock` or `?api=worker`.
+The app always uses the real (worker-backed) solver/generator. There is no mock mode at runtime.
 
 - Key files:
   - `src/app/page.tsx` – App UI and actions
   - `src/components/SudokuBoard.tsx` – Interactive grid
   - `src/workers/solverWorker.ts` – Worker glue for solve/generate
   - `src/lib/utils/sudoku.ts` – TypeScript solver/generator
-  - `src/lib/api` – API abstraction (`worker` and `mock` modes)
-  - `src/lib/data/puzzles.ts` – Category-based demo puzzles (used by `mock` mode)
+  - `src/lib/api` – API abstraction (worker mode)
+  - `src/lib/data/puzzles.ts` – Category-based demo puzzles (for curation/testing)
 
 ## Using Python To Curate Category Puzzles
 
@@ -58,8 +55,8 @@ Python is used to analyze/validate puzzles and group them into categories for th
   - Place curated puzzles into `src/lib/data/puzzles.ts` under the matching category export:
     - `easy`, `medium`, `hard`, `expert` each hold a list of 9×9 grids using `0` for blanks.
 
-- Mock mode uses these curated sets:
-  - When `NEXT_PUBLIC_API_MODE=mock`, the app serves puzzles from `src/lib/data/puzzles.ts` based on the selected category.
+Curated sets:
+  - `src/lib/data/puzzles.ts` includes category-based examples that can support curation and testing.
 
 Note: The site does not execute Python at runtime. Python is for offline analysis and content preparation; the browser uses the TypeScript implementation for solving/generating.
 
@@ -72,7 +69,7 @@ Note: The site does not execute Python at runtime. Python is for offline analysi
 ## Project Structure
 
 - Web (Next.js): `src/app`, `src/components`, `src/lib`, `src/workers`.
-- Puzzles dataset: `src/lib/data/puzzles.ts` (category-based arrays for mock mode).
+- Puzzles dataset: `src/lib/data/puzzles.ts` (category-based arrays for curated examples).
 - Python algorithms: `solver.py`, `sudokuHelper.py`, `hardAlgorithm.py`, `alternatingInferenceChain.py`.
 - Tests/examples: `test_basic.py`, `test/y_wing_data.py`.
 

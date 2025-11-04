@@ -7,12 +7,7 @@ import type { Difficulty, Grid } from '@/lib/types';
 
 export default function Page() {
   const api = useMemo(() => {
-    // Support query override like ?api=mock
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      const override = url.searchParams.get('api') as 'mock' | 'worker' | null;
-      return makeSudokuAPI(override ?? undefined);
-    }
+    // Always use real (worker) API; no mock or query override.
     return makeSudokuAPI();
   }, []);
 
@@ -89,11 +84,9 @@ export default function Page() {
           </div>
           <div className="p-3 rounded bg-slate-100 text-slate-700 text-sm">
             <p><b>API mode:</b> {api.mode}</p>
-            <p>Switch via query: <code>?api=mock</code> or <code>?api=worker</code></p>
           </div>
         </aside>
       </section>
     </main>
   );
 }
-
