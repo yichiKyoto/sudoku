@@ -19,3 +19,32 @@ Explore what puzzles are easily solvable by computer, and how operations to unso
 - Permuting numbers
 - Rotate puzzle
 - Permutation from a trivial sudoku to any other sudoku?
+
+---
+
+## Web Demo (Next.js + React + Tailwind + Worker)
+
+The repository includes a web demonstrator built with Next.js (App Router), React, Tailwind, and a Web Worker for compute-heavy tasks.
+
+- Features:
+  - Interactive 9×9 board to input/play Sudoku
+  - Solve the current board (worker-backed solver)
+  - Generate a puzzle by difficulty (easy/medium/hard/expert)
+  - API mode switch between a mock dataset and real worker logic
+
+- Commands:
+  - `npm install`
+  - `npm run dev` (Next.js dev server)
+  - `npm run build` (Next.js production build)
+  - `npm start` (run production server)
+
+- API mode switch:
+  - Default mode is `worker`. Set env var `NEXT_PUBLIC_API_MODE=mock` to use static test puzzles instead.
+  - You can override at runtime with query param: `?api=mock` or `?api=worker`.
+
+Key files:
+- `src/app/page.tsx` – Main page shell and actions
+- `src/components/SudokuBoard.tsx` – Interactive grid (React)
+- `src/workers/solverWorker.ts` – Web Worker (solve/generate)
+- `src/lib/utils/sudoku.ts` – Solver/generator implementation
+- `src/lib/api` – API abstraction with `mock` and `worker` implementations
