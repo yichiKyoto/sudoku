@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #2563eb;
+  --cell-size: min(9vmin, 52px);
+}
+
+@media (min-width: 640px) {
+  :root { --cell-size: 52px; }
+}
+
+button {
+  @apply px-3 py-2 rounded-md bg-slate-800 text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-white text-slate-800 border border-slate-300 hover:bg-slate-100;
+}
+
+code { @apply bg-indigo-50 rounded px-1; }
+

@@ -2,4 +2,9 @@ node_modules
 dist
 .DS_Store
 .svelte-kit
+/.next
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
 
