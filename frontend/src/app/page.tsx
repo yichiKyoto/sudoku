@@ -14,6 +14,9 @@ export default function Page() {
   const [grid, setGrid] = useState<Grid>(
     Array.from({ length: 9 }, () => Array(9).fill(0))
   );
+  const [givens, setGivens] = useState<boolean[][]>(
+    Array.from({ length: 9 }, () => Array(9).fill(false))
+  );
   const [busy, setBusy] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [message, setMessage] = useState('');
@@ -37,6 +40,9 @@ export default function Page() {
     try {
       const puzzle = await api.generate(difficulty);
       setGrid(puzzle);
+      // Mark initial clues as givens for styling
+      const mask = puzzle.map(row => row.map((v) => v !== 0));
+      setGivens(mask);
       setMessage('Puzzle ready.');
     } catch (e) {
       console.error(e);
@@ -48,6 +54,7 @@ export default function Page() {
 
   function onClear() {
     setGrid(Array.from({ length: 9 }, () => Array(9).fill(0)));
+    setGivens(Array.from({ length: 9 }, () => Array(9).fill(false)));
     setMessage('');
   }
 
@@ -76,7 +83,7 @@ export default function Page() {
 
       <section className="grid md:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="bg-white rounded-lg shadow p-3">
-          <SudokuBoard grid={grid} onChange={setGrid} disabled={busy} />
+          <SudokuBoard grid={grid} onChange={setGrid} disabled={busy} givens={givens} />
         </div>
         <aside className="flex flex-col gap-3">
           <div className="p-3 rounded bg-blue-50 text-blue-800 border border-blue-200">

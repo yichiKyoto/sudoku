@@ -5,10 +5,12 @@ export default function SudokuBoard({
   grid,
   disabled = false,
   onChange,
+  givens,
 }: {
   grid: Grid;
   disabled?: boolean;
   onChange: (grid: Grid) => void;
+  givens?: boolean[][];
 }) {
   function onInput(r: number, c: number, e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value.trim();
@@ -29,27 +31,34 @@ export default function SudokuBoard({
       }}
     >
       {Array.from({ length: 9 }).map((_, r) => (
-        Array.from({ length: 9 }).map((__, c) => (
-          <input
-            key={`${r}-${c}`}
-            className="cell text-center text-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            style={{
-              borderRightWidth: c % 3 === 2 ? '2px' : '1px',
-              borderBottomWidth: r % 3 === 2 ? '2px' : '1px',
-            }}
-            type="text"
-            maxLength={1}
-            value={grid[r][c] === 0 ? '' : String(grid[r][c])}
-            onChange={(e) => onInput(r, c, e)}
-            disabled={disabled}
-          />
-        ))
+        Array.from({ length: 9 }).map((__, c) => {
+          const isGiven = !!givens?.[r]?.[c];
+          const hasUserVal = !isGiven && grid[r][c] !== 0;
+          return (
+            <input
+              key={`${r}-${c}`}
+              className={`cell text-center text-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                isGiven ? 'cell-given' : hasUserVal ? 'cell-user' : ''
+              }`}
+              style={{
+                borderRightWidth: c % 3 === 2 ? '2px' : '1px',
+                borderBottomWidth: r % 3 === 2 ? '2px' : '1px',
+              }}
+              type="text"
+              maxLength={1}
+              value={grid[r][c] === 0 ? '' : String(grid[r][c])}
+              onChange={(e) => onInput(r, c, e)}
+              disabled={disabled}
+            />
+          );
+        })
       ))}
       <style jsx>{`
         .cell { width: var(--cell-size); height: var(--cell-size); }
         .cell:disabled { background: #f8fafc; }
+        .cell-given { color: #0f172a; font-weight: 600; }
+        .cell-user { color: #2563eb; }
       `}</style>
     </div>
   );
 }
-
