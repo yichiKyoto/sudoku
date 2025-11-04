@@ -368,4 +368,5 @@ testPuzzle = [
   [None, 3, None, None, None, None, None, 1, None]
 ]
 
-finalPossibilities = alternatingInferenceChain(makePossibilityPuzzle(testPuzzle))
+if __name__ == "__main__":
+    finalPossibilities = alternatingInferenceChain(makePossibilityPuzzle(testPuzzle))
