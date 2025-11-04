@@ -24,7 +24,80 @@ export default function Page() {
     Array.from({ length: 9 }, () => Array(9).fill(null))
   );
 
+  // Detect overlapping conflicts in the current grid (duplicates in any row/col/box, ignoring zeros)
+  function computeConflicts(g: Grid): boolean[][] {
+    const conflicts: boolean[][] = Array.from({ length: 9 }, () => Array(9).fill(false));
+
+    // rows
+    for (let r = 0; r < 9; r++) {
+      const seen = new Map<number, number[]>();
+      for (let c = 0; c < 9; c++) {
+        const v = g[r][c];
+        if (v === 0) continue;
+        const arr = seen.get(v) ?? [];
+        arr.push(c);
+        seen.set(v, arr);
+      }
+      for (const [, cols] of seen) if (cols.length > 1) {
+        for (const c of cols) conflicts[r][c] = true;
+      }
+    }
+
+    // cols
+    for (let c = 0; c < 9; c++) {
+      const seen = new Map<number, number[]>();
+      for (let r = 0; r < 9; r++) {
+        const v = g[r][c];
+        if (v === 0) continue;
+        const arr = seen.get(v) ?? [];
+        arr.push(r);
+        seen.set(v, arr);
+      }
+      for (const [, rows] of seen) if (rows.length > 1) {
+        for (const r of rows) conflicts[r][c] = true;
+      }
+    }
+
+    // 3x3 boxes
+    for (let br = 0; br < 9; br += 3) {
+      for (let bc = 0; bc < 9; bc += 3) {
+        const seen = new Map<number, [number, number][]>();
+        for (let dr = 0; dr < 3; dr++) {
+          for (let dc = 0; dc < 3; dc++) {
+            const r = br + dr, c = bc + dc;
+            const v = g[r][c];
+            if (v === 0) continue;
+            const arr = seen.get(v) ?? [];
+            arr.push([r, c]);
+            seen.set(v, arr);
+          }
+        }
+        for (const [, coords] of seen) if (coords.length > 1) {
+          for (const [r, c] of coords) conflicts[r][c] = true;
+        }
+      }
+    }
+
+    return conflicts;
+  }
+
   async function onSolve() {
+    // Check for overlaps in the current grid before solving
+    const overlaps = computeConflicts(grid);
+    const hasOverlap = overlaps.some(row => row.some(Boolean));
+    if (hasOverlap) {
+      // Highlight overlapped tiles in red and keep inputs editable
+      const nextMarks: (null | 'correct' | 'wrong')[][] = Array.from({ length: 9 }, () => Array(9).fill(null));
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (overlaps[r][c]) nextMarks[r][c] = 'wrong';
+        }
+      }
+      setMarks(nextMarks);
+      setMessage('Invalid puzzle: overlapping numbers in initial state.');
+      return; // do not solve
+    }
+
     setBusy(true); setMessage('Solving…');
     try {
       // Solve from the original puzzle (givens only), so incorrect user entries don't block solving
