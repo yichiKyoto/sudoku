@@ -6,11 +6,13 @@ export default function SudokuBoard({
   disabled = false,
   onChange,
   givens,
+  marks,
 }: {
   grid: Grid;
   disabled?: boolean;
   onChange: (grid: Grid) => void;
   givens?: boolean[][];
+  marks?: (null | 'correct' | 'wrong')[][];
 }) {
   function onInput(r: number, c: number, e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value.trim();
@@ -34,12 +36,12 @@ export default function SudokuBoard({
         Array.from({ length: 9 }).map((__, c) => {
           const isGiven = !!givens?.[r]?.[c];
           const hasUserVal = !isGiven && grid[r][c] !== 0;
+          const mark = marks?.[r]?.[c] ?? null;
+          const baseClass = isGiven ? 'cell-given' : (!mark && hasUserVal ? 'cell-user' : '');
           return (
             <input
               key={`${r}-${c}`}
-              className={`cell text-center text-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                isGiven ? 'cell-given' : hasUserVal ? 'cell-user' : ''
-              }`}
+              className={`cell text-center text-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 ${baseClass} ${mark === 'correct' ? 'cell-correct' : mark === 'wrong' ? 'cell-wrong' : ''}`}
               style={{
                 borderRightWidth: c % 3 === 2 ? '2px' : '1px',
                 borderBottomWidth: r % 3 === 2 ? '2px' : '1px',
@@ -58,6 +60,8 @@ export default function SudokuBoard({
         .cell:disabled { background: #f8fafc; }
         .cell-given { color: #0f172a; font-weight: 600; }
         .cell-user { color: #2563eb; }
+        .cell-correct { color: #16a34a; } /* green-600 for correct tiles */
+        .cell-wrong { color: #dc2626; }   /* red-600 for wrong tiles */
       `}</style>
     </div>
   );
