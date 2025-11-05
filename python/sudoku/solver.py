@@ -62,18 +62,63 @@ def obv_pairs_helper(possibles, box_row, box_col, pivot_set):
                 rm_from_cols(possibles, r, c, next_rm)
     return possibles
 
+def obv_pairs_helper_row(possibles, row, pivot_set):
+    for c in range(9):
+        if len(possibles[row][c]) != 1 and possibles[row][c] != pivot_set:
+            possibles[row][c] = possibles[row][c] - pivot_set
+        if len(possibles[row][c]) == 1:
+            next_rm = next(iter(possibles[row][c]))
+            rm_from_subgrid(possibles, row, c, next_rm)
+            rm_from_rows(possibles, row, c, next_rm)
+            rm_from_cols(possibles, row, c, next_rm)
+    return possibles
+
+def obv_pairs_helper_col(possibles, col, pivot_set):
+    for r in range(9):
+        if len(possibles[r][col]) != 1 and possibles[r][col] != pivot_set:
+            possibles[r][col] = possibles[r][col] - pivot_set
+        if len(possibles[r][col]) == 1:
+            next_rm = next(iter(possibles[r][col]))
+            rm_from_subgrid(possibles, r, col, next_rm)
+            rm_from_rows(possibles, r, col, next_rm)
+            rm_from_cols(possibles, r, col, next_rm)
+    return possibles
+
 def obv_pairs(possibles):
+    # Check 3x3 subgrids
     for box_row in range(0, 9, 3):
         for box_col in range(0, 9, 3):
-            hash_map = {} # {pair: count}
+            hash_map = {}  # {pair: count}
             for r in range(box_row, box_row + 3):
                 for c in range(box_col, box_col + 3):
                     if len(possibles[r][c]) == 2:
                         pair = tuple(sorted(possibles[r][c]))
                         hash_map[pair] = hash_map.get(pair, 0) + 1
-            for pivot_tuple in hash_map:
-                if hash_map[pivot_tuple] == 2:
+            for pivot_tuple, cnt in hash_map.items():
+                if cnt == 2:
                     possibles = obv_pairs_helper(possibles, box_row, box_col, set(pivot_tuple))
+
+    # Check rows
+    for r in range(9):
+        hash_map = {}
+        for c in range(9):
+            if len(possibles[r][c]) == 2:
+                pair = tuple(sorted(possibles[r][c]))
+                hash_map[pair] = hash_map.get(pair, 0) + 1
+        for pivot_tuple, cnt in hash_map.items():
+            if cnt == 2:
+                possibles = obv_pairs_helper_row(possibles, r, set(pivot_tuple))
+
+    # Check columns
+    for c in range(9):
+        hash_map = {}
+        for r in range(9):
+            if len(possibles[r][c]) == 2:
+                pair = tuple(sorted(possibles[r][c]))
+                hash_map[pair] = hash_map.get(pair, 0) + 1
+        for pivot_tuple, cnt in hash_map.items():
+            if cnt == 2:
+                possibles = obv_pairs_helper_col(possibles, c, set(pivot_tuple))
     return possibles
 
 
@@ -148,13 +193,13 @@ def row_hidden_singles(possibles):
     return possibles
 
 def y_wing_search(pr, pc):
-    # row search
+    # same-column peers
     row_viewers = set()
     for r in range(9):
         if r != pr:
             row_viewers.add((r, pc))
     # print(row_viewers)
-    # column search
+    # same-row peers
     col_viewers = set()
     for c in range(9):
         if c != pc:
@@ -178,7 +223,6 @@ def y_wing(possibles):
             if len(pivot) != 2:
                 continue
 
-            A, B = sorted(pivot)
             pivot_view = y_wing_search(pr, pc)
 
             # Find wings that form the Y-Wing pattern
@@ -360,6 +404,11 @@ def box_line_reduction(board):
                     for c in range(box_col_start, box_col_start + 3):
                         if num in board[r][c]:
                             board[r][c].remove(num)
+                            if len(board[r][c]) == 1:
+                                next_rm = next(iter(board[r][c]))
+                                rm_from_subgrid(board, r, c, next_rm)
+                                rm_from_rows(board, r, c, next_rm)
+                                rm_from_cols(board, r, c, next_rm)
     # Column-wise box-line reduction
     for col in range(9):
         for num in range(1, 10):
@@ -379,4 +428,9 @@ def box_line_reduction(board):
                     for r in range(box_row_start, box_row_start + 3):
                         if num in board[r][c]:
                             board[r][c].remove(num)
+                            if len(board[r][c]) == 1:
+                                next_rm = next(iter(board[r][c]))
+                                rm_from_subgrid(board, r, c, next_rm)
+                                rm_from_rows(board, r, c, next_rm)
+                                rm_from_cols(board, r, c, next_rm)
     return board
