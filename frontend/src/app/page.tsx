@@ -23,6 +23,7 @@ export default function Page() {
   const [marks, setMarks] = useState<(null | 'correct' | 'wrong')[][]>(
     Array.from({ length: 9 }, () => Array(9).fill(null))
   );
+  const [animatingCell, setAnimatingCell] = useState<[number, number] | null>(null);
 
   // Detect overlapping conflicts in the current grid (duplicates in any row/col/box, ignoring zeros)
   function computeConflicts(g: Grid): boolean[][] {
@@ -99,34 +100,59 @@ export default function Page() {
     }
 
     setBusy(true); setMessage('Solving…');
+    setAnimatingCell(null);
     try {
       // Solve from the original puzzle (givens only), so incorrect user entries don't block solving
       const puzzleOnly = grid.map((row, r) => row.map((v, c) => (givens[r]?.[c] ? v : 0)));
       const solved = await api.solve(puzzleOnly);
 
-      // Build marks and final grid:
-      const nextMarks: (null | 'correct' | 'wrong')[][] = Array.from({ length: 9 }, () => Array(9).fill(null));
-      const finalGrid = solved.map(row => row.slice());
+      const clearedMarks: (null | 'correct' | 'wrong')[][] =
+        Array.from({ length: 9 }, () => Array(9).fill(null));
+      setMarks(clearedMarks);
+
+      const originalGrid = grid.map((row) => row.slice());
+      const steps: { r: number; c: number; value: number; mark: null | 'correct' | 'wrong' }[] = [];
 
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
-          if (givens[r]?.[c]) continue; // givens unchanged
-          const userVal = grid[r][c];
+          if (givens[r]?.[c]) continue;
+          const userVal = originalGrid[r][c];
           const solVal = solved[r][c];
+          let mark: null | 'correct' | 'wrong' = null;
           if (userVal !== 0) {
-            if (userVal === solVal) {
-              nextMarks[r][c] = 'correct'; // correct tile → green
-            } else {
-              nextMarks[r][c] = 'wrong'; // wrong tile → red; overwrite with correct number
-              finalGrid[r][c] = solVal;
-            }
+            mark = userVal === solVal ? 'correct' : 'wrong';
           }
-          // Untried tiles (userVal === 0) keep default styling; value already from solved
+          steps.push({ r, c, value: solVal, mark });
         }
       }
 
-      setGrid(finalGrid);
-      setMarks(nextMarks);
+      const progressiveGrid = originalGrid.map((row) => row.slice());
+      const progressiveMarks = clearedMarks.map((row) => row.slice());
+
+      if (steps.length === 0) {
+        setGrid(solved);
+        setMarks(progressiveMarks);
+        setMessage('Solved.');
+        return;
+      }
+
+      for (const { r, c, value, mark } of steps) {
+        progressiveGrid[r][c] = value;
+        progressiveMarks[r][c] = mark;
+
+        const gridFrame = progressiveGrid.map((row) => row.slice());
+        const marksFrame = progressiveMarks.map((row) => row.slice());
+
+        setGrid(gridFrame);
+        setMarks(marksFrame);
+        setAnimatingCell([r, c]);
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+
+      setAnimatingCell(null);
+      setGrid(solved.map((row) => row.slice()));
+      setMarks(progressiveMarks.map((row) => row.slice()));
       setMessage('Solved.');
     } catch (e) {
       console.error(e);
@@ -187,7 +213,14 @@ export default function Page() {
 
       <section className="grid md:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="bg-white rounded-lg shadow p-3">
-          <SudokuBoard grid={grid} onChange={setGrid} disabled={busy} givens={givens} marks={marks} />
+          <SudokuBoard
+            grid={grid}
+            onChange={setGrid}
+            disabled={busy}
+            givens={givens}
+            marks={marks}
+            animatingCell={animatingCell}
+          />
         </div>
         <aside className="flex flex-col gap-3">
           <div className="p-3 rounded bg-blue-50 text-blue-800 border border-blue-200">
