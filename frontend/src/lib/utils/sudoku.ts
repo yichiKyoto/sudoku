@@ -1,4 +1,4 @@
-import type { Difficulty, Grid } from '$lib/types';
+import type { Difficulty, Grid } from '@/lib/types';
 import { shuffle } from './misc';
 
 export function isValid(grid: Grid, r: number, c: number, val: number): boolean {
@@ -78,14 +78,15 @@ export function generateFull(): Grid {
 
 export function generatePuzzle(difficulty: Difficulty): Grid {
   const full = generateFull();
-  const puzzle: Grid = full.map(row => row.slice());
+  const puzzle: Grid = full.map((row: Grid[number]) => row.slice());
   // target clues: simple heuristic
-  const targetClues = {
+  const targetCluesMap: Record<Difficulty, number> = {
     easy: 40,
     medium: 32,
     hard: 26,
     expert: 22,
-  }[difficulty];
+  };
+  const targetClues = targetCluesMap[difficulty];
 
   let cells = shuffle(Array.from({ length: 81 }, (_, i) => i));
   let removed = 0;
