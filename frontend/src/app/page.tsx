@@ -104,47 +104,42 @@ export default function Page() {
     try {
       // Solve from the original puzzle (givens only), so incorrect user entries don't block solving
       const puzzleOnly = grid.map((row, r) => row.map((v, c) => (givens[r]?.[c] ? v : 0)));
-      const solved = await api.solve(puzzleOnly);
+      const { grid: solved, steps: orderedSteps } = await api.solve(puzzleOnly);
 
       const clearedMarks: (null | 'correct' | 'wrong')[][] =
         Array.from({ length: 9 }, () => Array(9).fill(null));
       setMarks(clearedMarks);
 
       const originalGrid = grid.map((row) => row.slice());
-      const steps: { r: number; c: number; value: number; mark: null | 'correct' | 'wrong' }[] = [];
-
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          if (givens[r]?.[c]) continue;
-          const userVal = originalGrid[r][c];
-          const solVal = solved[r][c];
-          let mark: null | 'correct' | 'wrong' = null;
-          if (userVal !== 0) {
-            mark = userVal === solVal ? 'correct' : 'wrong';
-          }
-          steps.push({ r, c, value: solVal, mark });
-        }
-      }
 
       const progressiveGrid = originalGrid.map((row) => row.slice());
       const progressiveMarks = clearedMarks.map((row) => row.slice());
 
-      if (steps.length === 0) {
-        setGrid(solved);
+      if (orderedSteps.length === 0) {
+        setGrid(solved.map((row) => row.slice()));
         setMarks(progressiveMarks);
         setMessage('Solved.');
         return;
       }
 
-      for (const { r, c, value, mark } of steps) {
-        progressiveGrid[r][c] = value;
-        progressiveMarks[r][c] = mark;
+      for (const { r, c, value } of orderedSteps) {
+        if (value === 0) {
+          progressiveGrid[r][c] = 0;
+          if (!givens[r]?.[c]) progressiveMarks[r][c] = null;
+        } else {
+          progressiveGrid[r][c] = value;
+          if (!givens[r]?.[c]) {
+            const userVal = originalGrid[r]?.[c] ?? 0;
+            let mark: null | 'correct' | 'wrong' = null;
+            if (userVal !== 0 && value === solved[r][c]) {
+              mark = userVal === value ? 'correct' : 'wrong';
+            }
+            progressiveMarks[r][c] = mark;
+          }
+        }
 
-        const gridFrame = progressiveGrid.map((row) => row.slice());
-        const marksFrame = progressiveMarks.map((row) => row.slice());
-
-        setGrid(gridFrame);
-        setMarks(marksFrame);
+        setGrid(progressiveGrid.map((row) => row.slice()));
+        setMarks(progressiveMarks.map((row) => row.slice()));
         setAnimatingCell([r, c]);
 
         await new Promise((resolve) => setTimeout(resolve, 200));

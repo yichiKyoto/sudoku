@@ -1,4 +1,4 @@
-import type { Difficulty, Grid, ISudokuAPI } from '@/lib/types';
+import type { Difficulty, Grid, ISudokuAPI, SolveResult } from '@/lib/types';
 
 export function createWorkerAPI(): ISudokuAPI {
   const worker = new Worker(new URL('../../workers/solverWorker.ts', import.meta.url), { type: 'module' });
@@ -20,7 +20,7 @@ export function createWorkerAPI(): ISudokuAPI {
   return {
     mode: 'worker',
     solve(grid: Grid) {
-      return call<Grid>('solve', { grid });
+      return call<SolveResult>('solve', { grid });
     },
     generate(difficulty: Difficulty) {
       return call<Grid>('generate', { difficulty });

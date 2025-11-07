@@ -1,14 +1,14 @@
-import type { Difficulty, Grid, ISudokuAPI } from '@/lib/types';
+import type { Difficulty, Grid, ISudokuAPI, SolveResult } from '@/lib/types';
 import { deepCopy } from '@/lib/utils/misc';
-import { solveSudoku } from '@/lib/utils/sudoku';
+import { solveSudokuWithSteps } from '@/lib/utils/sudoku';
 import tests from '@/lib/data/puzzles';
 
 export function createMockAPI(): ISudokuAPI {
   return {
     mode: 'mock',
-    async solve(grid: Grid) {
+    async solve(grid: Grid): Promise<SolveResult> {
       const copy = deepCopy(grid);
-      const solved = solveSudoku(copy);
+      const solved = solveSudokuWithSteps(copy);
       if (!solved) throw new Error('Unsolvable');
       return solved;
     },

@@ -1,5 +1,37 @@
-import type { Difficulty, Grid } from '@/lib/types';
+import type { Difficulty, Grid, SolveStep } from '@/lib/types';
 import { shuffle } from './misc';
+
+interface NextCell {
+  r: number;
+  c: number;
+  candidates: number[];
+}
+
+export function findEmpty(grid: Grid): [number, number] | null {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) if (grid[r][c] === 0) return [r, c];
+  }
+  return null;
+}
+
+function pickNextCell(grid: Grid): NextCell | null {
+  let best: NextCell | null = null;
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (grid[r][c] !== 0) continue;
+      const candidates: number[] = [];
+      for (let v = 1; v <= 9; v++) if (isValid(grid, r, c, v)) candidates.push(v);
+      if (candidates.length === 0) return { r, c, candidates: [] };
+      if (!best || candidates.length < best.candidates.length) {
+        best = { r, c, candidates: shuffle(candidates) };
+        if (candidates.length === 1) return best;
+      }
+    }
+  }
+
+  return best;
+}
 
 export function isValid(grid: Grid, r: number, c: number, val: number): boolean {
   if (val < 1 || val > 9) return false;
@@ -15,27 +47,44 @@ export function isValid(grid: Grid, r: number, c: number, val: number): boolean 
   return true;
 }
 
-export function findEmpty(grid: Grid): [number, number] | null {
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) if (grid[r][c] === 0) return [r, c];
-  }
-  return null;
-}
-
 export function solveSudoku(grid: Grid): Grid | null {
-  const empty = findEmpty(grid);
-  if (!empty) return grid;
-  const [r, c] = empty;
-  const nums = shuffle([1,2,3,4,5,6,7,8,9]);
-  for (const v of nums) {
-    if (isValid(grid, r, c, v)) {
+  function helper(): boolean {
+    const choice = pickNextCell(grid);
+    if (!choice) return true;
+    const { r, c, candidates } = choice;
+    if (candidates.length === 0) return false;
+    for (const v of candidates) {
       grid[r][c] = v;
-      const solved = solveSudoku(grid);
-      if (solved) return solved;
+      if (helper()) return true;
       grid[r][c] = 0;
     }
+    return false;
   }
-  return null;
+
+  return helper() ? grid : null;
+}
+
+export function solveSudokuWithSteps(grid: Grid): { grid: Grid; steps: SolveStep[] } | null {
+  const steps: SolveStep[] = [];
+
+  function helper(): boolean {
+    const choice = pickNextCell(grid);
+    if (!choice) return true;
+    const { r, c, candidates } = choice;
+    if (candidates.length === 0) return false;
+    for (const v of candidates) {
+      grid[r][c] = v;
+      steps.push({ r, c, value: v });
+      if (helper()) return true;
+      grid[r][c] = 0;
+      steps.push({ r, c, value: 0 });
+    }
+    return false;
+  }
+
+  const solved = helper();
+  if (!solved) return null;
+  return { grid, steps };
 }
 
 export function countSolutions(grid: Grid, limit = 2): number {
@@ -106,4 +155,3 @@ export function generatePuzzle(difficulty: Difficulty): Grid {
   }
   return puzzle;
 }
-

@@ -1,4 +1,4 @@
-import { generatePuzzle, solveSudoku } from '@/lib/utils/sudoku';
+import { generatePuzzle, solveSudokuWithSteps } from '@/lib/utils/sudoku';
 import type { Difficulty, Grid } from '@/lib/types';
 
 type Req = { id: string; type: 'solve' | 'generate'; payload: any };
@@ -9,7 +9,7 @@ self.addEventListener('message', (ev: MessageEvent<Req>) => {
     if (type === 'solve') {
       const grid: Grid = payload.grid;
       const copy = grid.map(r => r.slice());
-      const result = solveSudoku(copy);
+      const result = solveSudokuWithSteps(copy);
       if (!result) throw new Error('Unsolvable');
       // @ts-ignore
       self.postMessage({ id, result });
