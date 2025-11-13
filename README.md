@@ -17,7 +17,7 @@ The website runs entirely client-side by default using a Web Worker. Python code
 
 - **Python programs (offline workflow):**
   - Python modules implement advanced techniques (Hidden Singles, Pointing, X-Wing, Y-Wing, AIC) for analysis and difficulty vetting:
-    - `solver.py`, `sudokuHelper.py`, `hardAlgorithm.py`, `alternatingInferenceChain.py`.
+    - `solver.py`, `sudoku_helper.py`, `hard_algorithm.py`, `alternating_inference_chain.py`, etc.
   - Use these scripts to verify solutions and curate puzzles into categories. Export curated puzzles into the frontend dataset (`src/lib/data/puzzles.ts`) for the site to serve by category.
   - This provides predictable, human-like challenge levels, while the site still supports on-the-fly generation via the worker.
 
@@ -45,13 +45,13 @@ Python is used to analyze/validate puzzles and group them into categories for th
 
 - Solve/validate and analyze difficulty locally:
   - `solver.py` provides candidate-elimination strategies (Hidden Singles, Pointing, X-Wing, Y-Wing) you can apply iteratively to a puzzle.
-  - `hardAlgorithm.py` wraps `alternatingInferenceChain.py` (AIC) for tougher eliminations.
-  - `sudokuHelper.py` contains correctness checks for final solutions.
+  - `hard_algorithm.py` wraps `alternating_inference_chain.py` (AIC) for tougher eliminations.
+  - `sudoku_helper.py` contains correctness checks for final solutions.
 
 - Example workflow (manual curation):
   - Start from a set of candidate puzzles (as 9×9 lists with `None`/ints).
   - Use `solver.det_possibles(...)` and the provided strategies to progress and assess technique requirements.
-  - Validate with `sudokuHelper.checkSudoku(...)` once solved.
+  - Validate with `sudoku_helper.checkSudoku(...)` once solved.
   - Place curated puzzles into `src/lib/data/puzzles.ts` under the matching category export:
     - `easy`, `medium`, `hard`, `expert` each hold a list of 9×9 grids using `0` for blanks.
 
@@ -59,6 +59,19 @@ Curated sets:
   - `src/lib/data/puzzles.ts` includes category-based examples that can support curation and testing.
 
 Note: The site does not execute Python at runtime. Python is for offline analysis and content preparation; the browser uses the TypeScript implementation for solving/generating.
+
+## Solver Performance Benchmarks
+
+Need quick timing data for each difficulty tier? A set of helper scripts in `python/sudoku` generates 100 puzzles for a tier, solves them with the expert backtracking solver, and prints aggregate stats (total/avg/median/min/max).
+
+```
+PYTHONPATH=python python3 -m sudoku.perf_easy
+PYTHONPATH=python python3 -m sudoku.perf_medium
+PYTHONPATH=python python3 -m sudoku.perf_hard
+PYTHONPATH=python python3 -m sudoku.perf_expert
+```
+
+Each command logs the number of attempts needed to gather 100 puzzles of the exact tier, then reports timing metrics so you can compare solver performance across categories or after algorithm changes.
 
 ## Data Contracts
 
@@ -70,7 +83,7 @@ Note: The site does not execute Python at runtime. Python is for offline analysi
 
 - Web (Next.js): `src/app`, `src/components`, `src/lib`, `src/workers`.
 - Puzzles dataset: `src/lib/data/puzzles.ts` (category-based arrays for curated examples).
-- Python algorithms: `solver.py`, `sudokuHelper.py`, `hardAlgorithm.py`, `alternatingInferenceChain.py`.
+- Python algorithms: `solver.py`, `sudoku_helper.py`, `hard_algorithm.py`, `alternating_inference_chain.py`.
 - Tests/examples: `test_basic.py`, `test/y_wing_data.py`.
 
 ## Future Extensions
