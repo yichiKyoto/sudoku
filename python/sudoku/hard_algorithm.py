@@ -72,17 +72,12 @@ def aic(possibles: Board) -> Board:
     return possibles
 
 
-def x_wing_once(possibles: Board) -> Board:
-    """Run a single X-Wing pass (row and column based)."""
-    return solver.x_wing(possibles)
-
-
 def x_wing(possibles: Board, *, max_passes: int = 10) -> Board:
     """Run X-Wing iteratively until stable or capped."""
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        solver.x_wing(possibles)
+        possibles = solver.x_wing(possibles)
         after = _snapshot(possibles)
         passes += 1
         if before == after:
@@ -90,17 +85,27 @@ def x_wing(possibles: Board, *, max_passes: int = 10) -> Board:
     return possibles
 
 
-def y_wing_once(possibles: Board) -> Board:
-    """Run a single Y-Wing pass."""
-    return solver.y_wing(possibles)
-
-
 def y_wing(possibles: Board, *, max_passes: int = 10) -> Board:
     """Run Y-Wing iteratively until stable or capped."""
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        solver.y_wing(possibles)
+        possibles = solver.y_wing(possibles)
+        after = _snapshot(possibles)
+        passes += 1
+        if before == after:
+            break
+    return possibles
+
+Grid = List[List[int]]
+def run_hard(grid: Grid, *, max_passes: int = 1000) -> Board:
+    possibles = solver.det_possibles(grid)
+    passes = 0
+    while passes < max_passes:
+        before = _snapshot(possibles)
+        possibles = y_wing(possibles)
+        possibles = x_wing(possibles)
+        possibles = aic(possibles)
         after = _snapshot(possibles)
         passes += 1
         if before == after:

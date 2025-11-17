@@ -32,19 +32,14 @@ from typing import List, Set, Tuple
 import python.sudoku.hidden_singles as HS
 import python.sudoku.pointing as PP
 import python.sudoku.box_line_reduction as BLR
-
+import solver
 
 Board = List[List[Set[int]]]
-
+Grid = List[List[int]]
 
 def hidden_singles(possibles: Board, *, max_passes: int = 10) -> Board:
     """Run Hidden Singles iteratively (box/row/col) until stable or capped."""
     return HS.hidden_singles(possibles, iterate=True, max_passes=max_passes)
-
-
-def hidden_singles_once(possibles: Board) -> Board:
-    """Run a single combined Hidden Singles pass (box, then row, then col)."""
-    return HS.hidden_singles(possibles, iterate=False)
 
 
 def _snapshot(possibles: Board) -> Tuple[Tuple[Tuple[int, ...], ...], ...]:
@@ -57,17 +52,12 @@ def pointing(possibles: Board, *, max_passes: int = 10) -> Board:
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        PP.pointing(possibles)
+        possibles = solver.pointing(possibles)
         after = _snapshot(possibles)
         passes += 1
         if before == after:
             break
     return possibles
-
-
-def pointing_once(possibles: Board) -> Board:
-    """Run a single Pointing Pairs/Triples pass."""
-    return PP.pointing(possibles)
 
 
 def box_line_reduction(possibles: Board, *, max_passes: int = 10) -> Board:
@@ -75,7 +65,7 @@ def box_line_reduction(possibles: Board, *, max_passes: int = 10) -> Board:
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        BLR.box_line_reduction(possibles)
+        possibles = solver.box_line_reduction(possibles)
         after = _snapshot(possibles)
         passes += 1
         if before == after:
@@ -83,6 +73,28 @@ def box_line_reduction(possibles: Board, *, max_passes: int = 10) -> Board:
     return possibles
 
 
-def box_line_reduction_once(possibles: Board) -> Board:
-    """Run a single Box-Line Reduction pass."""
-    return BLR.box_line_reduction(possibles)
+def obvious_pairs(possibles: Board, *, max_passes: int = 10) -> Board:
+    passes = 0
+    while passes < max_passes:
+        before = _snapshot(possibles)
+        possibles = solver.obv_pairs(possibles)
+        after = _snapshot(possibles)
+        passes += 1
+        if before == after:
+            break
+    return possibles
+
+def run_medium(grid: Grid, *, max_passes: int = 1000):
+    possibles = solver.det_possibles(grid)
+    passes = 0
+    while passes < max_passes:
+        before = _snapshot(possibles)
+        possibles = hidden_singles(possibles)
+        possibles = pointing(possibles)
+        possibles = box_line_reduction(possibles)
+        possibles = obvious_pairs(possibles)
+        after = _snapshot(possibles)
+        passes += 1
+        if before == after:
+            break
+    return possibles

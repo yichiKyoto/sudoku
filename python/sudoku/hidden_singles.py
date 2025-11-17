@@ -11,7 +11,7 @@ elimination behavior and propagation via `rm_from_*` helpers.
 
 from typing import List, Set, Tuple
 
-from . import solver
+import solver
 
 
 Board = List[List[Set[int]]]

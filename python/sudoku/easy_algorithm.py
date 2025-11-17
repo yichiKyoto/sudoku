@@ -25,12 +25,12 @@ Usage examples:
 
 from typing import List, Set, Tuple
 
-import python.sudoku.hidden_singles as HS
-from . import solver
+import hidden_singles as HS
+import solver
 
 
 Board = List[List[Set[int]]]
-
+Grid = List[List[int]]
 
 def _snapshot(possibles: Board) -> Tuple[Tuple[Tuple[int, ...], ...], ...]:
     """Create a hashable snapshot of the candidates grid for change detection."""
@@ -55,8 +55,8 @@ def single_candidate_once(possibles: Board) -> Board:
     return possibles
 
 
-def single_candidate(possibles: Board, *, max_passes: int = 10) -> Board:
-    """Run Single Candidate iteratively until stable or capped."""
+def single_candidate(grid: Grid, *, max_passes: int = 1000) -> Board:
+    possibles = solver.det_possibles(grid)
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
@@ -68,16 +68,9 @@ def single_candidate(possibles: Board, *, max_passes: int = 10) -> Board:
     return possibles
 
 
-def hidden_singles(possibles: Board, *, max_passes: int = 10) -> Board:
-    """Run Hidden Singles iteratively (box/row/col) until stable or capped."""
-    return HS.hidden_singles(possibles, iterate=True, max_passes=max_passes)
-
-
-def hidden_singles_once(possibles: Board) -> Board:
-    """Run a single combined Hidden Singles pass (box, then row, then col)."""
-    return HS.hidden_singles(possibles, iterate=False)
-
 
 # Friendly aliases
 naked_singles = single_candidate
 naked_singles_once = single_candidate_once
+
+run_easy = single_candidate

@@ -90,3 +90,6 @@ if __name__ == "__main__":
         print("valid:", sudoku_helper.checkSudoku(solved))
     else:
         print("unsolvable")
+
+def run_expert(grid: Grid):
+    return _solve_inplace(grid, 0, 0)
