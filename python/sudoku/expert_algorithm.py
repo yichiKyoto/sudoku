@@ -7,7 +7,7 @@ solutions. Keeps import side-effects minimal (no top-level execution).
 
 from typing import List, Optional
 
-import python.sudoku.sudoku_helper as sudoku_helper
+import sudoku_helper
 
 Grid = List[List[int]]
 
@@ -21,7 +21,7 @@ def _solve_inplace(puzzle: Grid, row: int, col: int) -> bool:
         row += 1
         col = 0
 
-    if puzzle[row][col] != 0:
+    if puzzle[row][col]:
         return _solve_inplace(puzzle, row, col + 1)
 
     for num in range(1, 10):
@@ -29,7 +29,7 @@ def _solve_inplace(puzzle: Grid, row: int, col: int) -> bool:
         if sudoku_helper.checkCell(puzzle, row, col):
             if _solve_inplace(puzzle, row, col + 1):
                 return True
-        puzzle[row][col] = 0
+        puzzle[row][col] = None
 
     return False
 
@@ -92,4 +92,5 @@ if __name__ == "__main__":
         print("unsolvable")
 
 def run_expert(grid: Grid):
-    return _solve_inplace(grid, 0, 0)
+    _solve_inplace(grid, 0, 0)
+    return grid

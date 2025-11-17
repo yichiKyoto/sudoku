@@ -29,10 +29,11 @@ Usage examples:
 
 from typing import List, Set, Tuple
 
-import python.sudoku.hidden_singles as HS
-import python.sudoku.pointing as PP
-import python.sudoku.box_line_reduction as BLR
+import hidden_singles as HS
+import pointing as PP
+import box_line_reduction as BLR
 import solver
+import easy_algorithm
 
 Board = List[List[Set[int]]]
 Grid = List[List[int]]
@@ -89,6 +90,7 @@ def run_medium(grid: Grid, *, max_passes: int = 1000):
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
+        possibles = easy_algorithm.single_candidate(grid)
         possibles = hidden_singles(possibles)
         possibles = pointing(possibles)
         possibles = box_line_reduction(possibles)

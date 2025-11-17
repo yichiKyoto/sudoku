@@ -7,7 +7,7 @@ consistent with `hidden_singles.py`.
 
 from typing import List, Set
 
-from . import solver
+import solver
 
 
 Board = List[List[Set[int]]]

@@ -6,7 +6,7 @@ Thin adapter over `solver.box_line_reduction`.
 
 from typing import List, Set
 
-from . import solver
+import solver
 
 
 Board = List[List[Set[int]]]

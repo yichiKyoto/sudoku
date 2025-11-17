@@ -18,8 +18,9 @@ return it for convenience.
 """
 
 from typing import List, Set, Dict, Tuple
-
-from . import solver
+import easy_algorithm
+import medium_algorithm
+import solver
 
 Board = List[List[Set[int]]]
 
@@ -58,7 +59,7 @@ def aic(possibles: Board) -> Board:
     - Returns the same `possibles` reference after applying eliminations.
     """
     # Import here to avoid side effects during module import elsewhere
-    import python.sudoku.alternating_inference_chain as AIC
+    import alternating_inference_chain as AIC
 
     # Convert to the structure expected by AIC implementation
     as_dict = _list_to_dict(possibles)
@@ -103,6 +104,11 @@ def run_hard(grid: Grid, *, max_passes: int = 1000) -> Board:
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
+        possibles = easy_algorithm.single_candidate(grid)
+        possibles = medium_algorithm.hidden_singles(possibles)
+        possibles = medium_algorithm.pointing(possibles)
+        possibles = medium_algorithm.box_line_reduction(possibles)
+        possibles = medium_algorithm.obvious_pairs(possibles)
         possibles = y_wing(possibles)
         possibles = x_wing(possibles)
         possibles = aic(possibles)
