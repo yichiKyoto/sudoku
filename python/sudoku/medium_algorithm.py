@@ -90,8 +90,10 @@ def run_medium(grid: Grid, *, max_passes: int = 1000):
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        possibles = easy_algorithm.single_candidate(grid)
-        possibles = hidden_singles(possibles)
+        # possibles = easy_algorithm.single_candidate(grid)
+        possibles = solver.hidden_singles(possibles)
+        possibles = solver.col_hidden_singles(possibles)
+        possibles = solver.row_hidden_singles(possibles)
         possibles = pointing(possibles)
         possibles = box_line_reduction(possibles)
         possibles = obvious_pairs(possibles)

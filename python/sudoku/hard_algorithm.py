@@ -104,7 +104,7 @@ def run_hard(grid: Grid, *, max_passes: int = 1000) -> Board:
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        possibles = easy_algorithm.single_candidate(grid)
+        # possibles = easy_algorithm.single_candidate(grid)
         possibles = medium_algorithm.hidden_singles(possibles)
         possibles = medium_algorithm.pointing(possibles)
         possibles = medium_algorithm.box_line_reduction(possibles)

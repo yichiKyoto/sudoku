@@ -16,32 +16,41 @@ def print_possibles(possibles):
 
 
 
+puzzes = {"easy_puzzle": puzzles.easy_puzzle, "medium_puzzle": puzzles.medium_puzzle, "hard_puzzle": puzzles.hard_puzzle}
 
 # Easy
-start = time.perf_counter()
-possibles = easy_algorithm.run_easy(puzzles.puzzle1)
-end = time.perf_counter()
-print_possibles(possibles)
-print(f"Easy bot took {end - start:.6f} seconds\n")
 
-# Medium
-start = time.perf_counter()
-possibles = medium_algorithm.run_medium(puzzles.puzzle1)
-end = time.perf_counter()
-print_possibles(possibles)
-print(f"Medium bot took {end - start:.6f} seconds\n")
+for puzz in puzzes:
 
-# Hard
-start = time.perf_counter()
-possibles = hard_algorithm.run_hard(puzzles.puzzle1)
-end = time.perf_counter()
-print_possibles(possibles)
-print(f"Hard bot took {end - start:.6f} seconds\n")
+  start = time.perf_counter()
+  possibles = easy_algorithm.run_easy(puzzes[puzz])
+  end = time.perf_counter()
+  print_possibles(possibles)
+  easy = f"{end - start:.6f}"
 
-# Expert
-start = time.perf_counter()
-puzzle1 = expert_algorithm.run_expert(puzzles.puzzle1)
-end = time.perf_counter()
-print(puzzle1)
-print(f"Expert bot took {end - start:.6f} seconds\n")
+  # Medium
+  start = time.perf_counter()
+  possibles = medium_algorithm.run_medium(puzzes[puzz])
+  end = time.perf_counter()
+  print_possibles(possibles)
+  medium = f"{end - start:.6f}"
 
+  # Hard
+  start = time.perf_counter()
+  possibles = hard_algorithm.run_hard(puzzes[puzz])
+  end = time.perf_counter()
+  print_possibles(possibles)
+  hard = f"{end - start:.6f}"
+
+  # Expert
+  start = time.perf_counter()
+  puzzle1 = expert_algorithm.run_expert(puzzes[puzz])
+  print(puzzle1)
+  end = time.perf_counter()
+  expert = f"{end - start:.6f}"
+
+  with open("performance.txt", "a") as out_file:
+    out_file.write(f"{puzz}|{easy}|{medium}|{hard}|{expert}\n")
+
+# possibles = medium_algorithm.run_medium(puzzles.medium_puzzle)
+# print_possibles(possibles)

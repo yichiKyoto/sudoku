@@ -1,5 +1,10 @@
 import sudoku_helper
-
+import easy_algorithm
+import medium_algorithm
+import hard_algorithm
+import expert_algorithm
+import time
+# from test import print_possibles
 def puzzle_1():
     return [
         [5, 3, 4, 6, 7, 8, 9, 1, 2],
@@ -65,7 +70,7 @@ def puzzle_5():
         [2, 1, 4, 8, 5, 9, 3, 6, 7]
     ]
 
-# Unfills a number of cells in a given sudoku puzzle 
+# Unfills a number of cells in a given sudoku puzzle
 #   puzzle     - The filled sudoku puzzle to unfill cells in
 #   num_unfill - The number of cells to unfill (0 to 81)
 def unfill_cell(puzzle, num_unfill):
@@ -83,19 +88,45 @@ def unfill_cell(puzzle, num_unfill):
 
     for i in range(num_unfill):
         row, col = order[i]
-        puzzle[row][col] = 0
+        puzzle[row][col] = None
 
     return puzzle
 
 def main():
-    print(sudoku_helper.checkSudoku(puzzle_1()))
-    print(sudoku_helper.checkSudoku(puzzle_2()))
-    print(sudoku_helper.checkSudoku(puzzle_3()))
-    print(sudoku_helper.checkSudoku(puzzle_4()))
-    print(sudoku_helper.checkSudoku(puzzle_5()))
+    # print("hello")
+    # print(sudoku_helper.checkSudoku(puzzle_1()))
+    # print(sudoku_helper.checkSudoku(puzzle_2()))
+    # print(sudoku_helper.checkSudoku(puzzle_3()))
+    # print(sudoku_helper.checkSudoku(puzzle_4()))
+    # print(sudoku_helper.checkSudoku(puzzle_5()))
 
     # Usage example, unfills 10 cells from puzzle 1
-    for row in unfill_cell(puzzle_1(), 10):
-        print(row)
+
+    for unfill in range(1, 81):
+        # start = time.perf_counter()
+        # possibles = easy_algorithm.run_easy(unfill_cell(puzzle_1(), unfill))
+        # end = time.perf_counter()
+        # easy = round(end - start, 6)
+
+
+        # start = time.perf_counter()
+        # possibles = medium_algorithm.run_medium(unfill_cell(puzzle_1(), unfill))
+        # end = time.perf_counter()
+        # medium = round(end - start, 6)
+
+        # start = time.perf_counter()
+        # possibles = hard_algorithm.run_hard(unfill_cell(puzzle_1(), unfill))
+        # end = time.perf_counter()
+        # hard = round(end - start, 6)
+
+
+        start = time.perf_counter()
+        possibles = expert_algorithm.run_expert(unfill_cell(puzzle_1(), unfill))
+        end = time.perf_counter()
+        expert = round(end - start, 6)
+
+        with open("output.txt", "a") as f:
+            f.write(f"{unfill}|{expert}\n")
+        # print_possibles(possibles)
 
 main()
