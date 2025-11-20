@@ -54,9 +54,8 @@ def single_candidate_once(possibles: Board) -> Board:
                 solver.rm_from_subgrid(possibles, r, c, number)
     return possibles
 
-
 def single_candidate(grid: Grid, *, max_passes: int = 1000) -> Board:
-    possibles = solver.det_possibles(grid)
+    possibles = grid
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
@@ -73,4 +72,6 @@ def single_candidate(grid: Grid, *, max_passes: int = 1000) -> Board:
 naked_singles = single_candidate
 naked_singles_once = single_candidate_once
 
-run_easy = single_candidate
+def run_easy(grid: Grid):
+    possibles = solver.det_possibles(grid) 
+    return solver.possibles_to_int_array(single_candidate(possibles))

@@ -175,14 +175,14 @@ def performEliminations(possibilities, chain, ruleType):
     startNum, startCell = startNode
     startRow, startCol = startCell[0], startCell[1]
 
-    print(f"AIC found, type: {ruleType}")
-    print(f"chain: {chain}")
+    # print(f"AIC found, type: {ruleType}")
+    # print(f"chain: {chain}")
 
     if ruleType == "Type 2":
         cellCands = possibilities.get((startRow, startCol), set())
         #check if startnum is still a candidate and its not the only candidate
         if startNum in cellCands and len(cellCands) > 1:
-            print(f"eliminating {startNum} from ({startRow}, {startCol})")
+            # print(f"eliminating {startNum} from ({startRow}, {startCol})")
             possibilities[(startRow, startCol)].discard(startNum)
             return True
 
@@ -190,7 +190,7 @@ def performEliminations(possibilities, chain, ruleType):
         cellCands = possibilities.get((startRow, startCol), set())
         #check if the cell has candidates and is not already solved for startnum
         if cellCands and cellCands != {startNum}:
-            print(f"setting {startNum} as solution for ({startRow}, {startCol})")
+            # print(f"setting {startNum} as solution for ({startRow}, {startCol})")
 
             #explicitly clear the set and add only the solution
             new_set = set()
@@ -230,7 +230,7 @@ def performEliminations(possibilities, chain, ruleType):
 
             #perform elimination
             if startNum in possibilities.get((row, col), set()) and len(possibilities[(row, col)]) > 1:
-                print(f"eliminating {startNum} from ({row}, {col})")
+                # print(f"eliminating {startNum} from ({row}, {col})")
                 possibilities[(row, col)].discard(startNum)
                 eliminated = True
         return eliminated
@@ -350,10 +350,10 @@ def alternatingInferenceChain(possibilities):
                 foundChain, ruleType = aicResult
 
                 if performEliminations(possibilities, foundChain, ruleType):
-                    print("aic found and eliminated some possibilities")
+                    # print("aic found and eliminated some possibilities")
                     return possibilities
 
-    print("exiting the aic function")
+    # print("exiting the aic function")
     return possibilities
 
 testPuzzle = [

@@ -50,6 +50,17 @@ def det_possibles(puzzle):
           rm_from_subgrid(possibles, row, col, number)
   return possibles
 
+# Unpacks from 2D array of sets to 2D array of Integer
+def possibles_to_int_array(possible):
+    for row in range(9):
+        for col in range(9):
+            if (len(possible[row][col]) == 1):
+                possible[row][col], = possible[row][col]
+            else:
+                possible[row][col] = 0
+
+    return possible
+
 def obv_pairs_helper(possibles, box_row, box_col, pivot_set):
     for r in range(box_row, box_row + 3):
         for c in range(box_col, box_col + 3):

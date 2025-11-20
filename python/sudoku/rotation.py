@@ -3,17 +3,16 @@
 
 
 # board is a 2D array
+# Adapted from
+# https://www.geeksforgeeks.org/dsa/rotate-a-matrix-by-90-degree-in-clockwise-direction-without-using-any-extra-space/#google_vignette
 def rotate(board):
-  new_board = [board_row[:] for board_row in board]
+    res = [[0] * 9 for _ in range(9)]
 
-  for row in range(0, 9):
-    new_row = 0
-    new_col = 8 - row
-    for col in range(0, 9):
-      value = board[row][col]
-      new_board[new_row][new_col] = value
-      new_row += 1
-  return new_board
+    for i in range(9):
+        for j in range(9):
+            res[j][9 - i - 1] = board[i][j]
+
+    return res
 
 # board = [
 #     [1, 2, 3, 4, 5, 6, 7, 8, 9],

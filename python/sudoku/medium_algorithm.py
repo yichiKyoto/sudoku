@@ -90,7 +90,7 @@ def run_medium(grid: Grid, *, max_passes: int = 1000):
     passes = 0
     while passes < max_passes:
         before = _snapshot(possibles)
-        # possibles = easy_algorithm.single_candidate(grid)
+        possibles = easy_algorithm.single_candidate(possibles)
         possibles = solver.hidden_singles(possibles)
         possibles = solver.col_hidden_singles(possibles)
         possibles = solver.row_hidden_singles(possibles)
@@ -101,4 +101,4 @@ def run_medium(grid: Grid, *, max_passes: int = 1000):
         passes += 1
         if before == after:
             break
-    return possibles
+    return solver.possibles_to_int_array(possibles)

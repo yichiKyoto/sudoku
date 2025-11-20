@@ -6,6 +6,8 @@ def gridShiftRight(puzzle):
             puzzle[row][colStart * 3 + 1] = puzzle[row][colStart * 3]
             puzzle[row][colStart * 3] = temp
 
+    return puzzle
+
 def gridShiftDown(puzzle):
     for rowStart in range(0, 3):
         for col in range(0, 9):
@@ -14,3 +16,4 @@ def gridShiftDown(puzzle):
             puzzle[rowStart * 3 + 1][col] = puzzle[rowStart * 3][col]
             puzzle[rowStart * 3][col] = temp
 
+    return puzzle
