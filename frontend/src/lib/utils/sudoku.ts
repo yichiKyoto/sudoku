@@ -1,6 +1,13 @@
 import type { Difficulty, Grid, SolveStep } from '@/lib/types';
 import { shuffle } from './misc';
 
+const TARGET_CLUES_MAP: Record<Difficulty, number> = {
+  easy: 40,
+  medium: 32,
+  hard: 26,
+  expert: 22,
+};
+
 interface NextCell {
   r: number;
   c: number;
@@ -87,6 +94,14 @@ export function solveSudokuWithSteps(grid: Grid): { grid: Grid; steps: SolveStep
   return { grid, steps };
 }
 
+export function classifyDifficulty(puzzle: Grid): Difficulty {
+  const givens = puzzle.reduce((sum, row) => sum + row.filter((v) => v !== 0).length, 0);
+  if (givens >= TARGET_CLUES_MAP.easy) return 'easy';
+  if (givens >= TARGET_CLUES_MAP.medium) return 'medium';
+  if (givens >= TARGET_CLUES_MAP.hard) return 'hard';
+  return 'expert';
+}
+
 export function countSolutions(grid: Grid, limit = 2): number {
   const empty = findEmpty(grid);
   if (!empty) return 1;
@@ -128,14 +143,8 @@ export function generateFull(): Grid {
 export function generatePuzzle(difficulty: Difficulty): Grid {
   const full = generateFull();
   const puzzle: Grid = full.map((row: Grid[number]) => row.slice());
-  // target clues: simple heuristic
-  const targetCluesMap: Record<Difficulty, number> = {
-    easy: 40,
-    medium: 32,
-    hard: 26,
-    expert: 22,
-  };
-  const targetClues = targetCluesMap[difficulty];
+  // target clues: simple heuristic aligned with classifyDifficulty thresholds
+  const targetClues = TARGET_CLUES_MAP[difficulty];
 
   let cells = shuffle(Array.from({ length: 81 }, (_, i) => i));
   let removed = 0;

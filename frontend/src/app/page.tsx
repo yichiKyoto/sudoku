@@ -20,6 +20,7 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [message, setMessage] = useState('');
+  const [classifiedDifficulty, setClassifiedDifficulty] = useState<Difficulty | null>(null);
   const [marks, setMarks] = useState<(null | 'correct' | 'wrong')[][]>(
     Array.from({ length: 9 }, () => Array(9).fill(null))
   );
@@ -83,6 +84,7 @@ export default function Page() {
   }
 
   async function onSolve() {
+    setClassifiedDifficulty(null);
     // Check for overlaps in the current grid before solving
     const overlaps = computeConflicts(grid);
     const hasOverlap = overlaps.some(row => row.some(Boolean));
@@ -104,7 +106,7 @@ export default function Page() {
     try {
       // Solve from the original puzzle (givens only), so incorrect user entries don't block solving
       const puzzleOnly = grid.map((row, r) => row.map((v, c) => (givens[r]?.[c] ? v : 0)));
-      const { grid: solved, steps: orderedSteps } = await api.solve(puzzleOnly);
+      const { grid: solved, steps: orderedSteps, difficulty: solvedDifficulty } = await api.solve(puzzleOnly);
 
       const clearedMarks: (null | 'correct' | 'wrong')[][] =
         Array.from({ length: 9 }, () => Array(9).fill(null));
@@ -119,6 +121,7 @@ export default function Page() {
         setGrid(solved.map((row) => row.slice()));
         setMarks(progressiveMarks);
         setMessage('Solved.');
+        setClassifiedDifficulty(solvedDifficulty);
         return;
       }
 
@@ -149,9 +152,11 @@ export default function Page() {
       setGrid(solved.map((row) => row.slice()));
       setMarks(progressiveMarks.map((row) => row.slice()));
       setMessage('Solved.');
+      setClassifiedDifficulty(solvedDifficulty);
     } catch (e) {
       console.error(e);
       setMessage('No solution or error.');
+      setClassifiedDifficulty(null);
     } finally {
       setBusy(false);
     }
@@ -167,6 +172,7 @@ export default function Page() {
       setGivens(mask);
       // Clear any previous marks
       setMarks(Array.from({ length: 9 }, () => Array(9).fill(null)));
+      setClassifiedDifficulty(null);
       setMessage('Puzzle ready.');
     } catch (e) {
       console.error(e);
@@ -180,6 +186,7 @@ export default function Page() {
     setGrid(Array.from({ length: 9 }, () => Array(9).fill(0)));
     setGivens(Array.from({ length: 9 }, () => Array(9).fill(false)));
     setMarks(Array.from({ length: 9 }, () => Array(9).fill(null)));
+    setClassifiedDifficulty(null);
     setMessage('');
   }
 
@@ -220,6 +227,15 @@ export default function Page() {
         <aside className="flex flex-col gap-3">
           <div className="p-3 rounded bg-blue-50 text-blue-800 border border-blue-200">
             <div className="text-sm">{message || 'Ready.'}</div>
+          </div>
+          <div className="p-3 rounded bg-emerald-50 text-emerald-900 border border-emerald-200">
+            <div className="text-xs uppercase tracking-wide text-emerald-700">Classified difficulty</div>
+            <div className="text-2xl font-semibold">
+              {classifiedDifficulty
+                ? classifiedDifficulty.charAt(0).toUpperCase() + classifiedDifficulty.slice(1)
+                : '—'}
+            </div>
+            <p className="text-xs text-emerald-700 mt-1">Shown after solving the puzzle.</p>
           </div>
           <div className="p-3 rounded bg-slate-100 text-slate-700 text-sm">
             <p><b>API mode:</b> {api.mode}</p>

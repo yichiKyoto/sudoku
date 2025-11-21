@@ -10,6 +10,7 @@ export interface SolveStep {
 export interface SolveResult {
   grid: Grid;
   steps: SolveStep[];
+  difficulty: Difficulty;
 }
 
 export interface ISudokuAPI {
